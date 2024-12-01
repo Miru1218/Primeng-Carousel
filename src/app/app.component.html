@@ -1,58 +1,19 @@
-<div
-  class="flex align-items-center relative"
-  (mouseenter)="pauseAutoplay(carouselRef)"
-  (mouseleave)="resumeAutoplay(carouselRef)"
->
-  <p-carousel
-    #carouselRef
-    [value]="products"
-    [numVisible]="1"
-    [numScroll]="1"
-    orientation="vertical"
-    [showIndicators]="false"
-    [circular]="true"
-    verticalViewPortHeight="100px"
-    [showNavigators]="false"
-    class="flex-grow-1"
-    [autoplayInterval]="1000"
-  >
-    <ng-template let-product pTemplate="item">
-      <div class="m-2 p-3">
-        <div class="flex align-items-center">
-          <div class="flex align-items-center">
-            <p-tag
-              [value]="product.inventoryStatus"
-              class="mr-3"
-              severity="info"
-            ></p-tag>
-          </div>
+<div class="card flex justify-content-center">
+  <form [formGroup]="formGroup">
+    <p-multiSelect
+      [options]="cities"
+      filter="false"
+      formControlName="selectedCities"
+      optionLabel="name"
+      placeholder="Select Cities"
+      selectedItemsLabel="{0} 項已選擇"
+      [maxSelectedLabels]="0"
+    />
 
-          <div class="font-medium flex-grow-1 text-center">
-            <a
-              [href]="product.url"
-              target="_blank"
-              class="text-blue-500 hover:underline"
-            >
-              {{ product.name }}
-            </a>
-          </div>
-        </div>
-      </div>
-    </ng-template>
-  </p-carousel>
-
-  <div class="flex flex-column align-items-center">
-    <button
-      pButton
-      icon="pi pi-chevron-up"
-      class="p-button-rounded p-button-text mb-2"
-      (click)="navigate($event, -1, carouselRef)"
-    ></button>
-    <button
-      pButton
-      icon="pi pi-chevron-down"
-      class="p-button-rounded p-button-text"
-      (click)="navigate($event, 1, carouselRef)"
-    ></button>
-  </div>
+    <p-chips
+      formControlName="chipsValues"
+      placeholder="未選擇"
+      (keydown)="preventInput($event)"
+    />
+  </form>
 </div>

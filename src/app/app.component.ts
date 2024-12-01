@@ -1,8 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild } from '@angular/core';
+import { Component } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
-import { Carousel, CarouselModule } from 'primeng/carousel';
+import { CarouselModule } from 'primeng/carousel';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { TagModule } from 'primeng/tag';
+import { ChipsModule } from 'primeng/chips';
+
 
 @Component({
   selector: 'app-root',
@@ -11,107 +15,69 @@ import { TagModule } from 'primeng/tag';
     CommonModule,
     CarouselModule,
     TagModule,
-    ButtonModule
+    ButtonModule,
+    MultiSelectModule,
+    ReactiveFormsModule,
+    ChipsModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  private autoplayTimeout: any;
-  @ViewChild(Carousel) carousel!: Carousel;
+  formGroup!: FormGroup;
+  cities!: { name: string; code: string }[];
 
+  ngOnInit() {
+    this.cities = [
+      { name: 'New York', code: 'NY' },
+      { name: 'Rome', code: 'RM' },
+      { name: 'London', code: 'LDN' },
+      { name: 'Istanbul', code: 'IST' },
+      { name: 'Paris', code: 'PRS' }
+    ];
 
-  products = [
-    {
-      id: '2000',
-      code: 'x123y456z',
-      name: 'Leather Wallet',
-      description: 'Compact and stylish leather wallet.',
-      image: 'leather-wallet.jpg',
-      price: 1,
-      category: 'Accessories',
-      quantity: 30,
-      inventoryStatus: 'INSTOCK',
-      rating: 4,
-      url: 'https://www.google.com.tw/?hl=zh_TW'
-    },
-    {
-      id: '2001',
-      code: 'qweasd123',
-      name: 'Running Shoes',
-      description: 'Lightweight running shoes for everyday fitness.',
-      image: 'running-shoes.jpg',
-      price: 2,
-      category: 'Fitness',
-      quantity: 12,
-      inventoryStatus: 'LOWSTOCK',
-      rating: 5,
-      url: 'https://www.google.com.tw/?hl=zh_TW'
-    },
-    {
-      id: '2002',
-      code: 'plm098nmb',
-      name: 'Denim Jacket',
-      description: 'Classic denim jacket for casual outfits.',
-      image: 'denim-jacket.jpg',
-      price: 3,
-      category: 'Clothing',
-      quantity: 5,
-      inventoryStatus: 'LOWSTOCK',
-      rating: 4,
-      url: 'https://www.google.com.tw/?hl=zh_TW'
-    },
-    {
-      id: '2003',
-      code: 'xzx987xzx',
-      name: 'Smartphone Stand',
-      description: 'Ergonomic stand for smartphones and tablets.',
-      image: 'smartphone-stand.jpg',
-      price: 4,
-      category: 'Electronics',
-      quantity: 40,
-      inventoryStatus: 'INSTOCK',
-      rating: 3,
-      url: 'https://www.google.com.tw/?hl=zh_TW'
-    },
-    {
-      id: '2004',
-      code: 'asd123qwe',
-      name: 'Wireless Earbuds',
-      description: 'Noise-canceling wireless earbuds with long battery life.',
-      image: 'wireless-earbuds.jpg',
-      price: 5,
-      category: 'Electronics',
-      quantity: 8,
-      inventoryStatus: 'LOWSTOCK',
-      rating: 5,
-      url: 'https://www.google.com.tw/?hl=zh_TW'
-    }
-  ];
+    this.formGroup = new FormGroup({
+      selectedCities: new FormControl<any[] | null>(null),
+      chipsValues: new FormControl<any[]>([])
+    });
 
-  pauseAutoplay(carouselRef: Carousel): void {
-    carouselRef.stopAutoplay();
-    clearTimeout(this.autoplayTimeout); // 清除任何現有的重啟計時器
+    this.formGroup.get('selectedCities')?.valueChanges.subscribe(selected => {
+      console.log(selected);
+      this.updateChipsValues(selected);
+    });
+
+    this.formGroup.get('chipsValues')?.valueChanges.subscribe(chips => {
+      console.log(chips);
+      this.updateSelectedCities(chips);
+    });
+
   }
 
-  resumeAutoplay(carouselRef: Carousel): void {
-    clearTimeout(this.autoplayTimeout); // 確保不重複重啟計時器
-    this.autoplayTimeout = setTimeout(() => {
-      carouselRef.startAutoplay();
-    }, 2000); // 2 秒後重新啟動
+  // 更新 chipsValues 的方法
+  private updateChipsValues(selectedCities: any[]) {
+    const chipsControl = this.formGroup.get('chipsValues') as FormControl;
+
+    // 檢查選擇的城市是否已經存在於 chips 中，避免無限循環
+    const cityNames = selectedCities ? selectedCities.map(city => city.name) : [];
+
+    if (JSON.stringify(chipsControl.value) !== JSON.stringify(cityNames)) {
+      chipsControl.setValue(cityNames);
+    }
   }
 
-  navigate(event: MouseEvent, direction: number, carouselRef: Carousel): void {
-    // 暫停自動輪播
-    this.pauseAutoplay(carouselRef);
+  // 更新 selectedCities 的方法
+  private updateSelectedCities(chips: any[]) {
+    const multiSelectControl = this.formGroup.get('selectedCities') as FormControl;
 
-    if (direction === -1) {
-      carouselRef.navBackward(event); // 向上
-    } else if (direction === 1) {
-      carouselRef.navForward(event); // 向下
+    // 檢查 chips 是否已經存在於 selectedCities 中，避免無限循環
+    const selectedOptions = this.cities.filter(city => chips.includes(city.name));
+
+    if (JSON.stringify(multiSelectControl.value) !== JSON.stringify(selectedOptions)) {
+      multiSelectControl.setValue(selectedOptions);
     }
-
-    // 確保導航後重新啟動 autoplay
-    this.resumeAutoplay(carouselRef);
+  }
+  preventInput(event: KeyboardEvent) {
+    console.log(event);
+    event.preventDefault(); // 阻止輸入
   }
 }
